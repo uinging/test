@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>图片缩放,比例,scale</title>
+    <link rel="stylesheet" type="text/css" href="scale.css">
+</head>
+<body class="">
+    <div class="content">
+        <img src="img/1.jpg" class="srcImg">
+    </div>
+
+    <div class="imgContainer">
+    
+    </div>
+
+    <!-- <div id="tip" class="tip">
+        帮助信息
+    </div> -->
+
+
+    <script type="text/javascript" src="zepto.min.js"></script>
+    <script type="text/javascript">
+        /**
+         * 类似于微信图片的处理
+         * 1 普通图片打开后默认宽度100%, 最大高度100%, 对于特别瘦高的图,最小宽度200px 或 60% ?
+         * 2 最多放大至2倍
+         * 3 图缩放后不能比打开后大小更小,如果scale < 1, 松手后自动重置为1
+         * 4 scale > 2时, 松手后重置为2
+         * 5 以双指中点为原点缩放 transform-origin, 所有比例均基于图片自身
+         */
+
+
+
+
+
+        var scaleImg = $(".scaleImg"),
+            tip = $("#tip"),
+
+            basicDistance,
+            midPoint = {},
+            // resultRatio = 1,
+            imgWidth,
+            imgHeight,
+            imgRatio,
+
+            resultWidth,
+            resultHeight,
+
+            target = $(".scaleImg"),
+            imgContainer = $(".imgContainer"),
+            imgWrapper = $(".imgWrapper"),
+
+            boxWidth = imgContainer.width(),
+            boxHeight = imgContainer.height(),
+
+            scrollTop = 0,
+            scrollLeft = 0,
+
+            touchIndex = 0;
+
+        scaleImg.on("touchstart", function(e){
+            // touchIndex = 1;
+            // console.log("e", e);
+            // // tip("e", e);
+            // var touch = e.touches,
+            //     len = touch.length,
+            //     touch1 = touch[0],
+            //     touch2 = touch[1];
+
+            // console.log("touch1: ", touch1.clientX, touch1.clientY);
+
+            // if(len === 2) {
+            //     target = $(e.target);
+            //     basicDistance = getTouchLength(touch1,touch2);
+            //     tip.append("<br>basicDistance: " + basicDistance);
+            // }
+        }).on("touchmove", function(e){
+            var touch = e.touches,
+                len = touch.length;
+
+            if(len === 2) {
+                if(!touchIndex) {
+                    touchIndex = 1;
+                }
+                touchIndex++;
+
+                var touch1 = touch[0],
+                    touch2 = touch[1];
+
+                if(!basicDistance) {
+                    basicDistance = getTouchLength(touch1,touch2);
+                }
+                if(!imgWidth) {
+                    imgWidth = target.width();
+                    imgHeight = target.height();
+                    imgRatio = (imgHeight / imgWidth).toFixed(2);
+                }
+
+                if(!midPoint.x) {
+                    midPoint.x = Math.ceil((touch1.clientX + touch2.clientX) / 2);
+                    midPoint.y = Math.ceil((touch1.clientY + touch2.clientY) / 2);
+                    // if(imgWidth <= boxWidth) {
+                    //     midPoint.left = Math.round(midPoint.x / imgWidth * 100);
+                    // } else {
+                    //     midPoint.left = Math.round(midPoint.x / (midPoint.x + scrollLeft) * 100);    // 中点相对于容器左边距离的百分比
+                    // }
+                    // if(imgHeight <= boxHeight) {
+                    //     midPoint.top = Math.round(midPoint.y / imgHeight * 100);
+                    // } else {
+                    //     midPoint.top = Math.round(midPoint.y / (midPoint.y + scrollTop) * 100);
+                    // }
+                    
+                    midPoint.left = midPoint.x / imgWidth * 100 + "%";
+                }
+
+
+                if(touchIndex % 2 === 0) {
+                    var currentDistance = getTouchLength(touch1,touch2);
+
+                    // var ratio = (currentDistance / basicDistance).toFixed(2);
+                    // var ratio = Math.round(currentDistance / basicDistance * 100);
+                    // var change = ratio - 100;
+                    var change = currentDistance - basicDistance;
+
+                    // resultRatio = (change + resultRatio * 100) / 100;
+                    resultWidth = change + imgWidth;
+
+                    resultWidth = resultWidth <= 100 ? 100 : resultWidth;
+                    resultHeight = imgRatio * 100 * resultWidth / 100;
+
+                    if(resultWidth > boxWidth) {
+                        scrollLeft = (resultWidth - boxWidth) * midPoint.left / 100;
+                        imgWrapper.scrollLeft(scrollLeft);
+                    }
+                    if(resultHeight > boxHeight) {
+                        scrollTop = (resultHeight - boxHeight) * midPoint.top / 100;
+                        imgWrapper.scrollTop(scrollTop);
+                    }
+
+                    // if(resultWidth > boxWidth || resultHeight > boxHeight) {
+                    //     imgWrapper.scrollTop((resultHeight - boxHeight) / 2).scrollLeft();
+                    // }
+
+
+                    // var _marginLeft = (boxWidth - resultWidth) / 2,
+                        // _marginTop = (boxHeight - resultHeight) / 2;
+
+                    // target.css('transform', 'scale(' + resultRatio + ')');
+                    target.css('width', resultWidth + "px");
+                    target.css({
+                        "width": resultWidth + "px",
+                        "min-width": resultWidth + "px"
+                        // "margin-left": _marginLeft + "px",
+                        // "margin-top": _marginTop + "px"
+                    });
+                    // if(_marginTop < 0) {
+                    //     imgWrapper.scrollTop(Math.abs(_marginTop));
+                    // }
+                    // if(_marginLeft < 0) {
+                    //     imgWidth.scrollLeft(Math.abs(_marginLeft));
+                    // }
+                    // log("current distance: ", currentDistance, " ratio: ", ratio, " touchIndex: ", touchIndex);
+                    // log(" ratio: ", ratio);
+                    log( " midPoint.left:", midPoint.left," midPoint.top: ", midPoint.top);
+                }
+            }
+
+
+            // if(len === 2 && !basicDistance) {
+            //     basicDistance = getTouchLength(touch1,touch2);
+            // }
+
+            // if(touchIndex % 3 === 0 && len === 2) {
+                
+
+            //     var currentDistance = getTouchLength(touch1,touch2);
+
+            //     var ratio = (currentDistance / basicDistance).toFixed(2);
+
+            //     target.css('transform', 'scale(' + ratio + ')');
+            //     log("current distance: ", currentDistance, " ratio: ", ratio, " touchIndex: ", touchIndex);
+            // }
+
+        }).on("touchend", function(e){
+            log("touchend");
+            basicDistance = 0;
+            imgWidth = 0;
+            midPoint = {};
+        });
+
+        // $(".imgWrapper").on("scroll", function(e){
+        //     console.log("scroll",$(this).scrollTop());
+        // });
+
+        function getTouchLength(touch1,touch2){
+            return Math.round(getLength(touch1.clientX,touch1.clientY,touch2.clientX,touch2.clientY));
+        }
+
+        function getLength(x1,y1,x2,y2){
+            var x = Math.abs(x2 - x1),
+                y = Math.abs(y2 - y1);
+            return Math.sqrt(x*x + y*y);
+        }
+
+        function log(text){
+            // tip.append("<br>" + )
+            var info = [];
+            // console.log([].join.call(arguments," "));
+            [].forEach.call(arguments,function(ele,index,arr){
+                var type = typeof ele;
+                if(type === "number" || type === "string" ) {
+                    info.push(ele);
+                } else {
+                    tip.append("<br>第" + index + "个元素不可打印");
+                }
+            });
+
+            tip.append("<br>" + info.join(" "));
+        }
+
+
+
+
+    </script>
+</body>
+</html>

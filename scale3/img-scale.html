@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>图片缩放scale</title>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="scale.css">
+</head>
+<body class="">
+    <div id="content" class="content">
+        <img src="img/code1.jpg" class="srcImg">
+    </div>
+
+    <div id="scaleContainer" class="scaleContainer box-center hide">
+        <!-- <div id="scaleWrapper" class="scaleWrapper"> -->
+            <!-- <img src="img/code.jpg" class="scaleImg_"> -->
+        <!-- </div> -->
+    </div>
+
+    <a id="refreshBtn" href="" class="refreshBtn">Refresh</a>
+
+    <div id="tip" class="tip">
+        帮助信息
+    </div>
+
+    <script type="text/javascript" src="zepto.min.js"></script>
+    <script type="text/javascript">
+        var scaleContainer = $("#scaleContainer"),
+            tip = $("#tip"),
+            $window = $(window),
+            winWidth = $window.width(),
+            winHeight = $window.height();
+
+        function setScaleContainerSize(){
+            scaleContainer.width(winWidth * 2).height(winHeight * 2);
+        }
+
+        setScaleContainerSize();
+
+        $window.on("resize", function(e){
+            if(!scaleContainer.hasClass('hide')) {
+                setScaleContainerSize();
+            }
+        });
+
+        $("#content").on("click", function(e){
+            var target = $(e.target);
+            if(target.hasClass("srcImg")) {
+                var _img = target.clone();
+                _img.removeClass('srcImg').addClass('scaleImg');
+                scaleContainer.append(_img).removeClass('hide');
+            }
+        });
+
+
+        /**
+         * 类似于微信图片的处理
+         * 1 普通图片打开后默认宽度100%, 最大高度100%, 对于特别瘦高的图,最小宽度200px 或 60% ?
+         * 2 最多放大至2倍
+         * 3 如果scale < 1, 松手后自动重置为1
+         * 4 scale > 2时, 松手后重置为2
+         * 5 以双指中点为原点缩放 transform-origin, 所有比例均基于图片自身
+         */
+
+        var        // 两指开始时距离
+            scaleRatio = 1,
+            changeRatio = 0,
+            midPoint = {},
+            target = null;
+        //     tip = $("#tip"),
+
+        //     midPoint = {},
+
+            // variable = {
+            //     basicDistance   : "",       // 两指开始时距离
+            //     touchIndex      : "",       // 拦截touch
+            // };
+
+        scaleContainer.on("touchstart", function(e){
+            console.log("touchstart:",e.touches[0]);
+        }).on("touchmove", function(e){
+            var touch = e.touches,
+                len = touch.length,
+                
+                touchIndex;
+
+            if($(e.target).hasClass("scaleImg")) {
+                target = $(e.target);
+            } else {
+                return;
+            }
+
+            if(len === 2) {
+                if(!touchIndex) {
+                    touchIndex = 1;
+                }
+                touchIndex++;
+
+                var imgWidth = target.width(),
+                    imgHeight = target.height(),
+                    outerX = Math.round((imgWidth - winWidth) / 2),                     // 图片超出窗口x轴长度
+                    outerY = Math.round((imgHeight - winHeight) / 2),                   // 图片超出窗口y轴长度
+
+                    touch0 = touch[0],
+                    touch1 = touch[1]
+                ;
+
+
+                // if(!basicDistance) {
+                    basicDistance = basicDistance || getTouchLength(touch0,touch1);                      // 两指开始时间距
+                // }
+
+                if(!midPoint.pageX) {
+                    midPoint.pageX = Math.ceil((touch0.pageX + touch1.pageX) / 2);      // 离窗口左边距离
+                    midPoint.pageY = Math.ceil((touch0.pageY + touch1.pageY) / 2);      // 离窗口右边距离
+
+                    midPoint.x = outerX + midPoint.pageX;                               // 离图片左边距离
+                    midPoint.y = outerY + midPoint.pageY;                               // 离图片右边距离
+
+                    midPoint.left = Math.round(midPoint.x / imgWidth * 100) + "%";      // 离图片左边百分比
+                    midPoint.top = Math.round(midPoint.y / imgHeight * 100) + "%";      // 离图片右边百分比
+
+                    // log("left:" +  midPoint.left + "top:" + midPoint.top);
+                    target.css('transform-origin', midPoint.left + " " + midPoint.top); // 设置图片缩放中心
+
+                }
+
+                if(touchIndex % 2 === 0) {
+                    var currentDistance = getTouchLength(touch0,touch1),
+                        changeDistance = currentDistance - basicDistance;
+
+                    // changeRatio = Math.round(changeDistance / basicDistance * 100) / 100;
+                    changeRatio = (changeDistance > 0) ? 1 : -1;
+
+                    scaleRatio = (Math.round(scaleRatio * 100) + changeRatio) / 100;
+                        // scaleRatio = Math.round(currentDistance / basicDistance * 100) / 100;  // 缩放比例 like 1.25
+
+                    // log("currentDistance:", currentDistance, "basicDistance", basicDistance, "changeDistance", changeDistance, "changeRatio",changeRatio);
+                    log("changeRatio",changeRatio, "scaleRatio", scaleRatio);
+                    // log("changeRatio*100", changeRatio*100);
+                    // log("scaleRatio", scaleRatio);
+                    
+                    target.css('transform', 'scale(' + scaleRatio + ')');
+                    
+                }
+            }
+
+
+
+
+        }).on("touchend", function(e){
+            // 初始化
+            log("touchend");
+            if(scaleRatio < 1) {
+                scaleRatio = 1;
+                target.css('transform', 'scale(' + scaleRatio + ')');
+            }
+            target = null;
+            basicDistance = "";
+            midPoint = {};
+
+            // for(var _i in variable) {
+            //     variable[_i] = "";
+            // }
+        });
+
+        function getTouchLength(touch0,touch1){
+            var getLength = function(x1,y1,x2,y2){
+                var x = Math.abs(x2 - x1),
+                    y = Math.abs(y2 - y1);
+                return Math.sqrt(x*x + y*y);
+            };
+            return Math.round(getLength(touch0.pageX,touch0.pageY,touch1.pageX,touch1.pageY));
+        }
+
+        function log(text){
+            // tip.append("<br>" + )
+            var info = [];
+            // console.log([].join.call(arguments," "));
+            [].forEach.call(arguments,function(ele,index,arr){
+                var type = typeof ele;
+                if(type === "number" || type === "string" ) {
+                    info.push(ele);
+                } else {
+                    tip.append("<br>第" + index + "个元素不可打印: " + arguments[0]);
+                }
+            });
+            tip.append("<br>" + info.join(" "));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>scrollbar style test</title>
+    <style type="text/css" media="screen">
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+        }
+        .scrollContainer {
+            width: 300px;
+            margin: 20px auto;
+            overflow: auto;
+            outline: 1px solid red;
+
+            -webkit-scroll-behavior: smooth;
+            
+            /* -webkit-overflow-scrolling: touch; */
+
+        }
+
+        ::-webkit-scrollbar {
+            /* -webkit-appearance: none; */
+            width: 4px;
+            color: red;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            border-radius: 4px;
+            background-color: rgba(0,0,0,.5);
+            box-shadow: 0 0 1px rgba(255,255,255,.5);
+        }
+
+
+
+
+        .scrollWrapper {
+            width: 1000px;
+        }
+
+
+
+
+    </style>
+</head>
+<body>
+    <div class="scrollContainer">
+        <div class="scrollWrapper">
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Qui hic dicta sint, quas debitis, quam dignissimos. Ex quaerat fugiat obcaecati itaque explicabo, inventore eos, atque dolor, provident fuga, quibusdam eaque.
+        </div>
+    </div>
+</body>
+</html>

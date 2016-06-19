@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>兼容性测试</title>
+    
+    <style type="text/css" media="screen">
+        p {
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .warn {
+            color: red;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .hasAll {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body youdao="bind">
+    <h1>系统兼容性测试</h1>
+
+
+    <script type="text/javascript" src="zepto.min.js"></script>
+    <script type="text/javascript">
+        var body = $("body"),
+            div = $("<div></div>"),
+            method = "",
+
+            testArrMethod = ["includes", "concat"],
+            testStringMethod = []
+        ;
+
+
+        p().append("系统信息 $.os: <br>" + JSON.stringify($.os));
+        p().append("浏览器信息 $.browser: <br>" + JSON.stringify($.browser));
+
+        p().append("数组 支持的方法有:");
+        method = Object.getOwnPropertyNames(Array.prototype);
+        p().append(method.sort().join("<br>"));
+        p().append("支持方法的数量: " + method.length);
+        hasMethod(testArrMethod);
+
+        p().append("字符串 支持的方法有:");
+        method = Object.getOwnPropertyNames(String.prototype);
+        p().append(method.sort().join("<br>"));
+        p().append("支持方法的数量: " + method.length);
+
+
+
+        function p(){
+            var _p = $("<p></p>");
+            div.append(_p);
+            return _p;
+        }
+
+        function hasMethod(arr) {
+            var i,
+                result = "",
+                resultArr = []
+                ;
+
+            resultArr.have = 0;
+            resultArr.notHave = 0;
+
+
+            for(i in arr) {
+                console.log("method",method.join());
+                result = method.join().indexOf(arr[i]) > -1;
+                
+                result && (resultArr.push(arr[i] + " : " + result), resultArr.have++);
+                !result && (resultArr.push(arr[i] + " : <span class='warn'>" + result + "</span>"), resultArr.notHave++);
+                
+            }
+
+            if(!resultArr.notHave) {
+                resultArr.push("<span class='hasAll'>拥有所有检测方法</span>");
+            } else {
+                resultArr.push("包含的方法个数: " + resultArr.have);
+                resultArr.push("不包含的方法个数: <span class='warn'>" + resultArr.notHave + "</span>");
+            }
+
+            resultArr.unshift("检测是否包含给定方法:" + arr.join());
+
+            p().append(resultArr.join("<br>"));
+        }
+
+
+
+        body.append(div);
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+html,
+body {
+    /* height: 100%; */
+    /* overflow: hidden; */
+
+}
+
+body {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+
+
+}
+.content {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 10px;
+
+    opacity: 1;
+    transition: 0.1s;
+
+}
+.opacity {
+    opacity: 0 !important;
+}
+
+
+
+img {
+    max-width: 100%;
+    max-height: 100%;
+}
+.refreshBtn {
+    position: fixed;
+    z-index: 10;
+    bottom: 10px;
+    right:10px;
+
+    /* width: 60px; */
+    height: 30px;
+    padding: 0 15px;
+    line-height: 30px;
+    text-align: center;
+    background-color: green;
+    border-radius: 30px;
+    color: #fff !important;
+}
+
+
+.content img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: 300px;
+    margin: 10px auto;
+}
+
+.scaleContainer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+
+    z-index: 1;
+    background-color: #333;
+
+    /* width: 200%; */
+    /* height: 200%; */
+
+    text-align: center;
+    
+    color: #fff; 
+
+/*     -webkit-transform: translate(-25%,-25%);
+       -moz-transform: translate(-25%,-25%);
+        -ms-transform: translate(-25%,-25%);
+         -o-transform: translate(-25%,-25%);
+            transform: translate(-25%,-25%); */
+    
+}
+
+.scaleContainer img {
+    width: 100% !important;
+    /* height: 100% !important; */
+    height: auto;
+
+
+}
+
+
+.scaleImg {
+    /* position: absolute;
+    top:  50%;
+    left: 50%; */
+
+    /* vertical-align: middle; */
+    
+    transform: scale3d(1,1,1);
+    transition: 0.1s;
+
+/*     -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); */
+
+        /* max-width: none; */
+        /* max-height: none; */
+}
+.tip {
+    position: fixed;
+    z-index: 2;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 150px;
+    background-color: rgba(0,0,0,0.3);
+    color: #fff;
+    overflow: auto;
+}
+
+
+.zoomIn,
+.zoomOut {
+    position: absolute;
+    top: 10px;
+    z-index: 2;
+    border: none;
+    outline: none;
+
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.8) no-repeat center / contain;
+}
+.zoomIn {
+    right: 80px;
+    background-image: url('img/zoomin.png');
+}
+
+.zoomOut {
+    left: 80px;
+    background-image: url('img/zoomout.png');
+}
+
+.imgPage,
+.imgPage body {
+    height: 100%;
+    width: 100%;
+    background-color: #333;
+}
+
+.imgContainer {
+    height: 100%;
+    width: 100%;
+}

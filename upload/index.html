@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>upload</title>
+    <!--#include virtual="/mobile/common/css-common.html"-->
+    <style type="text/css" media="screen">
+        form .item {
+            display: block;
+            cursor: pointer;
+            background-color: #ccc;
+            border: 1px solid #555;
+            border-radius: 5px;
+            width: 200px;
+        }
+        [type='file'] {
+            
+            height: 200px;
+            
+            /* cursor: pointer; */
+            
+            
+        }
+        [type='submit'] {
+            /* width: 200px; */
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            margin-top: 10px;
+            /* background-color: #ccc; */
+            /* border-radius: 5px; */
+        }
+
+        .tipEle {
+            position: relative;
+        }
+        .tipEle:after {
+            content: attr(data-tip);
+            position: absolute;
+            top: 0;
+            left: 100%;
+            margin-left: 10px;
+            font-size: 14px;
+            color: #aaa;
+            /* line-height: 1.5; */
+            width: 100%;
+            text-align: left;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <form id="form" method="post" accept-charset="utf-8" action="">
+        <input type="file" id="filePicker" class="item" value="" placeholder="选择文件">
+        <a type="submit" id="uploadBtn" class="tipEle item" name="" value="提交" data-tip="">提交</a>
+    </form>
+    
+    <script type="text/javascript" src="../js/zepto.min.js"></script>
+    <script type="text/javascript" src="../js/md5.js"></script>
+    <script type="text/javascript">
+        var form = $("#form");
+        // var _url = "/upload?sid=" + global_userInfo.sid + "&action=uploadimage";
+        // var _url = "http://192.168.0.202/resumable_upload";
+        var _url = "http://192.168.0.12/upload";
+        // form.attr("action", "/upload?sid=" + global_userInfo.sid + "&action=uploadimage");
+
+        var filePicker = $('#filePicker'),
+            uploadBtn = $('#uploadBtn');
+
+
+        var file,
+            data,
+            md5Value,
+            config = null;
+
+        function init(){
+            tip("");
+            config = {
+                sliceSize: 1024 * 1024, // 1MB
+                start: 0,
+                index: 1
+            };
+        }
+        init();
+
+        filePicker.on('change', function(e){
+            
+            init();
+
+            file = this.files[0];
+
+            var reader = new FileReader(file);
+
+            // console.log("reader", reader);
+
+            if(!file) return;
+
+            reader.readAsDataURL(file);
+            reader.onload = function(event) {
+                // console.log("reader", reader);
+                filePicker.css({
+                    'background-image': "url(" + event.target.result + ')',
+                    "background-position": 'center',
+                    'background-size': 'contain',
+                    'background-repeat': 'no-repeat'
+                });
+                filePicker.attr('src', event.target.result);
+
+                reader.readAsBinaryString(file);
+                reader.onload = function(event) {
+                    // console.log("reader", reader);
+
+                    var binary = event.target.result;
+                    // console.log("binary", binary);
+                    md5Value = MD5(binary).toString();
+                    // console.log("md5",md5Value);
+
+                    // makeData();
+                };
+                
+            };
+        });
+
+        uploadBtn.on("click", function(e){
+            e.preventDefault();
+            tip("正在上传…");
+            sliceUpload();
+        });
+
+        function sliceUpload(){
+            config.totalSlice = Math.ceil(file.size / config.sliceSize);
+            singleUpload();
+            if(config.start + config.sliceSize < file.size) {
+                // alert("暂停一下");
+                if(confirm("传完了 " + config.index + "/" + config.totalSlice + "，要继续传剩下的吗?")) {
+                    config.start += config.sliceSize;
+                    config.index++;
+                    arguments.callee();
+                }
+            } else {
+                tip("上传成功");
+                alert("全部传完了 " + config.index + "/" + config.totalSlice);
+            }
+        }
+
+        function singleUpload(){
+            
+            makeData();
+            // console.log("index", config.index,"data.file",data.get('file'));
+
+            var xhr = new XMLHttpRequest();
+
+            xhr.open("post", _url, true);  
+
+            // xhr.setRequestHeader("Content-Type", "application/octet-stream"); 
+            // xhr.setRequestHeader("Access-Control-Allow-Headers", "application/octet-stream"); 
+            xhr.onreadystatechange = function(e) {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        alert("yes");
+                    } else {
+                        console.warn("!== 200");
+                    }
+                } 
+            };
+            xhr.send(data);
+        }
+
+        function makeData(){
+
+            data = new FormData();
+
+            data.append("md5",   md5Value);
+            data.append("size",  file.size);
+            data.append("name",  file.name);
+            data.append("type",  file.type.split("/")[1]);
+            data.append("total", config.totalSlice);
+            data.append("index", config.index);
+
+            data.append("file",  file.slice(config.start, config.start + config.sliceSize));
+
+            if(config.index > 10) {
+                return;
+            }
+        }
+
+        function tip(text){
+            uploadBtn.attr("data-tip", text);
+        }
+
+
+
+        
+    </script>
+
+
+
+
+</body>
+</html>

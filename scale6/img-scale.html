@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta id='scalable' name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'>
+    <title>图片缩放scale</title>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="scale.css">
+</head>
+<body class="">
+    <div id="content" class="content">
+        <img src="img/code1.jpg" class="srcImg">
+    </div>
+
+
+    <div id="scaleContainer" class="scaleContainer box-center hide">
+        <button type="button" id="zoomInBtn" class="zoomIn"></button>
+        <button type="button" id="zoomOutBtn" class="zoomOut"></button>
+    </div>
+
+    <a id="refreshBtn"  class="refreshBtn">Refresh</a>
+
+    <div id="tip" class="tip">
+        <p>帮助信息</p>
+    </div>
+
+    <script type="text/javascript" src="zepto.min.js"></script>
+    <!-- <script type="text/javascript" src="gesture.js"></script> -->
+    <script type="text/javascript">
+
+        var scaleContainer = $("#scaleContainer"),
+            tip = $("#tip"),
+            $window = $(window),
+            winWidth = $window.width(),
+            winHeight = $window.height(),
+            zoomInBtn = $("#zoomInBtn"),
+            zoomOutBtn = $("#zoomOutBtn"),
+            scaleImg,
+            imgWidth,
+            imgHeight;
+
+        var scaleRatio = 1,
+            posOffset,    // 初始位移      
+            initPos,       // 初始位置
+            currentPos,    // 当前位置
+            target,
+            posOffset = {},
+            osInfo = $.os;
+
+        function initVar(){
+            // log("init");
+            initPos = {};
+            currentPos = {};
+            target = null;
+
+            scaleContainer.index = 0;
+        }
+
+        initVar();
+
+        if(!osInfo.phone) {
+            $("body").html("请在手机上查看");
+            alert("请在手机上查看");
+            throw Error("请在手机上查看");
+        }
+
+
+        $window.on("resize", function(e){
+            if(!scaleContainer.hasClass('hide')) {
+                setScaleContainerSize();
+            }
+        });
+
+        $("#content").on("click", function(e){
+            var target = $(e.target);
+            if(target.hasClass("srcImg")) {
+                var _img = target.clone();
+                _img.removeClass('srcImg').addClass('scaleImg');
+                scaleContainer.append(_img).removeClass('hide');
+
+                scaleImg = $(".scaleImg");
+                posOffset = {x:0,y:0,lastX:0,lastY:0};
+                scaleRatio = 1;
+                scaleImg.index = 0;
+
+
+                scaleImg.on("touchmove", function(e){
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    if(osInfo.android) {
+                        scaleImg.index ++;
+                        if(scaleImg.index % 3 != 0) {
+                            return;
+                        }
+                    }
+                    log("index" + scaleImg.index);
+                    // console.log("touchmove",e);
+                    if(e.touches.length == 1) {
+                        var touch = e.touches[0];
+                        
+
+                        if(!initPos.x) {
+                            initPos.x = touch.pageX;
+                            initPos.y = touch.pageY;
+                        }
+
+                        // if(posOffset.lastX) {
+                            posOffset.x = touch.pageX - initPos.x + posOffset.lastX;
+                            posOffset.y = touch.pageY - initPos.y + posOffset.lastY;
+                        // } else {
+                        //     posOffset.x = (touch.pageX - initPos.x);
+                        //     posOffset.y = (touch.pageY - initPos.y);
+                        // }
+
+                        // console.log("initPos", initPos);
+                        // console.log("touch",touch);
+                        // console.log("posOffset",posOffset);
+
+                        // var scaleTrf = scaleImg.get(0).style.transform.match(/scale\(\d\.+\d+\)/)[0];
+                        var scaleTrf = 'scale(' + scaleRatio + ')';
+                        var trf = scaleTrf + ' translate(' + posOffset.x + 'px,' + posOffset.y + 'px)';
+
+                        // console.log("currentTrf", currentTrf);
+                        console.log("trf", trf);
+
+                        scaleImg.css('transform', trf);
+                    }
+                }).on("touchend", function(e){
+                    // initVar();
+                    posOffset.lastX = posOffset.x;
+                    posOffset.lastY = posOffset.y;
+
+                    posOffset.x = posOffset.y = 0;
+
+                    initVar();
+
+                }).on("click", function(e){
+                    scaleContainer.addClass('hide');
+                    scaleImg.remove();
+                });
+
+            }
+        });
+        
+        // function updateImgSize(){
+        //     imgHeight = scaleImg.height();
+        //     imgWidth = scaleImg.width();
+        // }
+
+        zoomInBtn.on("click", function(e){
+            scaleRatio += 1;
+            scaleRatio = (scaleRatio > 3) ? 3 : scaleRatio;
+            // scaleImg.css('transform', 'scale(' + scaleRatio + ')');
+            console.log("posOffset", posOffset);
+            var scaleTrf = 'scale(' + scaleRatio + ')';
+            var trf = scaleTrf + ' translate(' + posOffset.lastX + 'px,' + posOffset.lastY + 'px)';
+            scaleImg.css('transform', trf);
+
+            // updateImgSize();
+
+            // target.css('transform', 'scale(' + scaleRatio + ')');
+        });
+
+        zoomOutBtn.on("click", function(e){
+            scaleRatio -= 1;
+            scaleRatio = (scaleRatio < 1) ? 1 : scaleRatio;
+            // scaleImg.css('transform', 'scale(' + scaleRatio + ')');
+            var scaleTrf = 'scale(' + scaleRatio + ')';
+            var trf = scaleTrf + ' translate(' + posOffset.lastX + 'px,' + posOffset.lastY + 'px)';
+            scaleImg.css('transform', trf);
+
+            // updateImgSize();
+            // target.css('transform', 'scale(' + scaleRatio + ')');
+        });
+
+        // function getTouchLength(touch0,touch1){
+        //     var getLength = function(x1,y1,x2,y2){
+        //         var x = Math.abs(x2 - x1),
+        //             y = Math.abs(y2 - y1);
+        //         return Math.round(Math.sqrt(x*x + y*y));
+        //     };
+        //     return Math.round(getLength(Math.round(touch0.pageX),Math.round(touch0.pageY),Math.round(touch1.pageX),Math.round(touch1.pageY)));
+        // }
+
+        function log(text){
+            // tip.append("<br>" + )
+            var info = [];
+            // console.log([].join.call(arguments," "));
+            [].forEach.call(arguments,function(ele,index,arr){
+                var type = typeof ele;
+                if(type === "number" || type === "string" ) {
+                    info.push(ele);
+                } else {
+                    tip.append("<br>第" + index + "个元素不可打印: " + arguments[0]);
+                }
+            });
+            tip.prepend("<br>" + info.join(" "));
+        }
+    </script>
+</body>
+</html>

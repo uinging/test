@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html class="scalePage">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>查看图片</title>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="scale.css">
+</head>
+<body>
+
+    <div id="imgContainer" class="imgContainer box-center">
+        <img id="img" class="hide">
+    </div>
+
+    <script type="text/javascript" src="zepto.min.js"></script>
+    <script>
+        $("#imgContainer").on("click", function(e){
+            // alert("clickimg");
+            history.go(-1);
+        });
+
+        function getRequest(method) {
+            var handle = function(data){
+                if(method && method === "encodeURIComponent") {
+                    return decodeURIComponent(data);
+                } else {
+                    return unescape(data);
+                }
+            };
+
+            var rel = window.location.href;
+            var index = rel.indexOf("?");
+
+            var url = rel.substring(index); //获取url中"?"符后的字串
+            var theRequest = {};
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = str.split("&");
+                for (var i = 0; i < strs.length; i++) {
+                    var arr = strs[i].split("=");
+                    theRequest[arr[0]] = handle(arr[1]);
+                }
+            }
+            return theRequest;
+        }
+
+        // $(document).on("touchstart touchmove", function(e){
+        //     // e.preventDefault();
+        //     e.stopPropagation();
+        // });
+
+        
+
+        var request = getRequest();
+        request.src && $("#img").attr('src', request.src).removeClass('hide');
+        
+    </script>
+
+</body>
+</html>
